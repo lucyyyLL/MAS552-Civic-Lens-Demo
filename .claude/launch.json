@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "api",
+      "runtimeExecutable": "server/.venv/Scripts/python.exe",
+      "runtimeArgs": ["-m", "uvicorn", "app:app", "--port", "8000", "--app-dir", "server"],
+      "port": 8000
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "serve", "--", "--allowed-hosts", "all"],
+      "port": 8080
+    }
+  ]
+}

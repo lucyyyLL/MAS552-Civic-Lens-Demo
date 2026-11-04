@@ -1,61 +1,94 @@
-# A-Frame: World Effects
+# Civic Lens Demo
 
-This example allows the user to grow cacti 🌵  by tapping or clicking the ground. Showcases raycasting,
-spawning new objects, and importing a 3D model.
+Describe an object ("a wooden park bench", "a small oak tree"), then tap the ground to place it in
+AR. Built on 8th Wall's open-source A-Frame engine.
 
-![Cacti sprouting from the ground, in augmented reality, desktop 3D, and virtual reality](./src/assets/preview.gif)
+## How it works
 
-<details><summary>Try it out</summary>
+```
+Phone (A-Frame + 8th Wall)         src/
+  │  POST /api/resolve {prompt}      prompt-ui.js  text box → sets the current "brush"
+  ▼                                  tap-place.js  places the brush, normalized to real-world height
+Python backend (holds API keys)    server/
+  1. LLM router → {query, height_m}  llm_router.py Claude Haiku (optional, see below)
+  2. Poly Pizza search → GLB URL     polypizza.py
+  ▼                                  keys.py       reads keys from the secrets folder
+Phone loads the GLB, then each tap places a copy
+```
 
-https://8thwall.org/aframe-world-effects-example/
+### API keys
 
-<img alt="QR Code for the preview link" src="https://8th.io/qr?v=2&url=https://8thwall.org/aframe-world-effects-example/" width=250 height=250 />
+Keys are read from files in a `secrets` folder that sits **next to** this repo, never from
+environment variables and never committed:
 
-</details>
+```
+City Science/
+├── MAS552-Civic-Lens-Demo/   (this repo)
+└── secrets/
+    ├── PolyPizza API Key.txt   required
+    └── Anthropic API Key.txt   optional: enables the LLM router
+```
 
-## Usage
+Each file holds either the bare key or one `NAME="value"` line. Without the Anthropic key, the
+raw prompt is used as the search term and every model is placed 1 m tall. To mount the folder
+elsewhere (e.g. in a container), point `CIVIC_LENS_SECRETS_DIR` at its path.
 
-1. On this repository, click **Code** > **Download ZIP**. If you clone the repository instead, make sure you have Git LFS installed and run `git lfs pull`
-2. Unzip the folder to the location you'd like to work in
-3. `npm install`
-4. `npm run serve`
-5. To connect to a mobile device, follow [these instructions](https://8th.io/test-on-mobile)
-6. Recommended: Track your files using [git](https://git-scm.com/about) to avoid losing progress
+## Running locally
+
+1. Back end (first time: `python -m venv server/.venv` then
+   `server/.venv/Scripts/python -m pip install -r server/requirements.txt`):
+
+   ```bash
+   cd server && .venv/Scripts/python -m uvicorn app:app --port 8000 --reload
+   ```
+
+2. Front end, in a second terminal (first time: `npm install`):
+
+   ```bash
+   npm run serve
+   ```
+
+   The dev server proxies `/api` to the backend on port 8000.
+
+### Opening it on a phone
+
+Phone browsers only allow camera access over HTTPS. A Cloudflare quick tunnel gives the local
+dev server a public HTTPS link (no account needed):
+
+1. Install `cloudflared` once: `winget install Cloudflare.cloudflared`
+2. Start the backend as above.
+3. Start the front end so it accepts requests from the tunnel's domain:
+
+   ```bash
+   npm run serve -- --allowed-hosts all
+   ```
+
+4. In a third terminal, open the tunnel:
+
+   ```bash
+   cloudflared tunnel --url http://localhost:8080
+   ```
+
+5. Open the printed `https://<random>.trycloudflare.com` link on the phone.
+
+The laptop must keep all three processes running, and the link changes every time the tunnel
+restarts. Anyone with the link can use the backend (and spend your API credits), so share it
+only with people you trust and stop the tunnel when you are done.
 
 ## Deployment
 
-This project contains Github Actions configuration for deployment to Github Pages, which triggers automatically by pushing the `main` branch. You can also create a production build using `npm run build`, which outputs the production build to the `dist` folder, and publish to the web using [this guide](https://8thwall.org/docs/getting-started/publishing#self-hosting-your-project).
+Pushing `main` deploys the front end to GitHub Pages (see `.github/workflows/deploy.yml`). Pages
+only serves static files, so the backend must be hosted separately; set `API_BASE` in
+`src/prompt-ui.js` to its URL.
 
-## Questions?
+## Notes on 8th Wall
 
-Please raise any questions on [Github Discussions](https://github.com/orgs/8thwall/discussions) or join the [Discord](https://8th.io/discord) to connect with the community.
+The camera's starting height (y = 8) sets the scale of virtual content: smaller y means bigger
+content. `tap-place` assumes this height is roughly a phone held at ~1.6 m (`unitsPerMeter: 5`).
+It can be reset at any time by calling [`recenter()`](https://www.8thwall.com/docs/web/#recenter).
+The camera must not be at a height (y) of zero.
 
----
+## Attribution
 
-### Optimizing for Metaversal Deployment
-
-With R18, the all-new 8th Wall Engine features Metaversal Deployment, enabling you to create WebAR experiences once and deploy them to smartphones, tablets, computers and both AR and VR headsets. This project has a few platform-specific customizations:
-
-In **body.html**, we add the ```"allowedDevices: any"``` parameter to our ```xrweb``` component in ```<a-scene>``` 
-which ensures the project opens on all platforms, including desktop. Environment parameters 
-have been customized to generate an open desert space.
-
----
-
-### About World Tracking
-
-Built entirely using standards-compliant JavaScript and WebGL, 8th Wall’s Simultaneous Localization 
-and Mapping (SLAM) engine is hyper-optimized for real-time AR on mobile browsers. Features include
-Six Degrees of Freedom (6-DoF), Lighting estimation, instant surface detection and responsive scale.
-
-The Y position of the camera at start effectively determines the scale of virtual content on a surface 
-(e.g. smaller y, bigger content). This can be reset at any time by calling 
-[```recenter()```](https://www.8thwall.com/docs/web/#recenter).
-
-The camera should NOT be at a height (Y) of zero. It must be set to a non-zero value.
-
----
-
-#### Attribution
-
-Toon Cactus by [PolyChromic](https://skfb.ly/6Xvws)
+Models come from [Poly Pizza](https://poly.pizza). CC-BY models are credited on screen when
+selected.

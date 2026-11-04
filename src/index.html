@@ -5,16 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>A-Frame: Tap to Place Ground</title>
-  <meta itemprop="name" content="A-Frame: Tap to Place Ground">
-  <meta name="twitter:title" content="A-Frame: Tap to Place Ground">
-  <meta property="og:title" content="A-Frame: Tap to Place Ground">
-  <meta property="og:site_name" content="A-Frame: Tap to Place Ground">
-  <meta name="description" content="This example allows the user to grow cacti 🌵  by tapping or clicking the ground. Showcases raycasting, spawning objects, and importing a 3D model.">
-  <meta itemprop="description" content="This example allows the user to grow cacti 🌵  by tapping or clicking the ground. Showcases raycasting, spawning objects, and importing a 3D model.">
-  <meta property="og:description" content="This example allows the user to grow cacti 🌵  by tapping or clicking the ground. Showcases raycasting, spawning objects, and importing a 3D model.">
-  <meta name="twitter:description" content="This example allows the user to grow cacti 🌵  by tapping or clicking the ground. Showcases raycasting, spawning objects, and importing a 3D model.">
-  <meta property="og:image" content="https://8thwall.org/aframe-world-effects/assets/preview.gif"/>
+  <title>Civic Lens Demo</title>
+  <meta name="description" content="Describe an object, then tap the ground to place it in AR.">
 
   <script crossorigin="anonymous" src="./external/scripts/8frame-1.5.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"></script>
@@ -28,12 +20,19 @@
 <!-- body.html is optional; elements will be added to your html body after app.js is loaded. -->
 
 <div class="over">
-  <span id="promptText">Tap To Place Model</span>
+  <form id="promptForm">
+    <input id="promptInput" type="text" placeholder="Describe an object, e.g. a park bench"
+      maxlength="200" autocomplete="off" required>
+    <button type="submit">Create</button>
+  </form>
+  <span id="status">Describe an object, then tap the ground to place it</span>
+  <span id="credit"></span>
 </div>
 
-<!-- Add the tap-place component to the scene so it has an effect -->
+<!-- prompt-ui picks the model from a text prompt; tap-place places it where the ground is tapped -->
 <a-scene
   tap-place
+  prompt-ui
   landing-page
   xrextras-loading
   xrextras-runtime-error
@@ -50,7 +49,6 @@
   <!-- We can define assets here to be loaded when A-Frame initializes -->
   <a-assets>
     <img id="groundTex" src="assets/sand.jpg">
-    <a-asset-item id="cactusModel" src="assets/cactus.glb"></a-asset-item>
   </a-assets>
 
   <!-- The raycaster will emit mouse events on scene objects specified with the cantap class -->

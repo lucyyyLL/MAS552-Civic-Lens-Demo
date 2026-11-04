@@ -120,6 +120,8 @@ const config = {
   devServer: {
     open: false,
     compress: true,
+    // Forward API calls to the Python backend (server/app.py) so the page and API share an origin
+    proxy: [{context: ['/api'], target: 'http://localhost:8000'}],
     hot: true,
     liveReload: false,
     headers: {
