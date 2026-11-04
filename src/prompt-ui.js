@@ -13,6 +13,12 @@ export const promptUiComponent = {
     this.status = document.getElementById('status')
     this.credit = document.getElementById('credit')
 
+    // 8th Wall's desktop controls listen for WASD/arrow keys on window. Keep typing in the
+    // text box from moving the camera.
+    for (const type of ['keydown', 'keyup']) {
+      this.input.addEventListener(type, event => event.stopPropagation())
+    }
+
     form.addEventListener('submit', (event) => {
       event.preventDefault()
       this.resolve(this.input.value.trim())
@@ -34,7 +40,12 @@ export const promptUiComponent = {
       const body = await res.json().catch(() => ({detail: 'Could not reach the server'}))
       if (!res.ok) throw new Error(body.detail)
 
-      this.el.setAttribute('tap-place', {modelUrl: body.modelUrl, height: body.heightM})
+      const [x, y, z] = body.uprightRotation
+      this.el.setAttribute('tap-place', {
+        modelUrl: body.modelUrl,
+        upright: {x, y, z},
+        height: body.heightM,
+      })
       this.status.textContent = `${body.title} ready. Tap the ground to place it.`
       // CC-BY models require visible credit
       this.credit.textContent = body.attribution

@@ -22,7 +22,7 @@ Given a user's description, return:
 
 class Route(BaseModel):
     query: str = Field(description="Short search term for the model library")
-    height_m: float = Field(gt=0, description="Typical real-world height in meters")
+    height_m: float = Field(gt=0, description="Overall real-world height in meters")
 
 
 _api_key = read_key("Anthropic API Key.txt")

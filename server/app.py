@@ -22,7 +22,8 @@ class ResolveRequest(BaseModel):
 
 @app.post("/api/resolve")
 async def resolve(request: ResolveRequest) -> dict:
-    """Turn a description into a placeable model: its GLB URL, target height and credit line."""
+    """Turn a description into a placeable model: its GLB URL, how to stand it upright, its
+    target height and its credit line."""
     route = await llm_router.route(request.prompt)
     model = await polypizza.search(route.query)
     if model is None:
@@ -32,6 +33,7 @@ async def resolve(request: ResolveRequest) -> dict:
         "query": route.query,
         "title": model["Title"],
         "modelUrl": model["Download"],
+        "uprightRotation": polypizza.upright_rotation(model),
         "heightM": route.height_m,
         "attribution": model["Attribution"],
     }
