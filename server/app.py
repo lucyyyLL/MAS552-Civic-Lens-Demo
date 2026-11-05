@@ -1,6 +1,6 @@
 """Civic Lens backend. Holds the API keys so the static front end never sees them.
 
-Run from this folder:  .venv/Scripts/python -m uvicorn app:app --port 8000 --reload
+Run from the repo folder:  npm run api
 """
 
 from fastapi import FastAPI, HTTPException

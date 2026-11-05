@@ -35,20 +35,25 @@ elsewhere (e.g. in a container), point `CIVIC_LENS_SECRETS_DIR` at its path.
 
 ## Running locally
 
+Run both commands from the repo folder, each in its own terminal, and keep both running.
+
 1. Back end (first time: `python -m venv server/.venv` then
    `server/.venv/Scripts/python -m pip install -r server/requirements.txt`):
 
    ```bash
-   cd server && .venv/Scripts/python -m uvicorn app:app --port 8000 --reload
+   npm run api
    ```
 
-2. Front end, in a second terminal (first time: `npm install`):
+   Wait for `Uvicorn running on http://127.0.0.1:8000`.
+
+2. Front end (first time: `npm install`):
 
    ```bash
    npm run serve
    ```
 
-   The dev server proxies `/api` to the backend on port 8000.
+   The dev server proxies `/api` to the backend on port 8000 (set in `config/webpack.config.js`).
+   "Could not reach the server" in the app means the back end is not running.
 
 ### Opening it on a phone
 
@@ -56,7 +61,7 @@ Phone browsers only allow camera access over HTTPS. A Cloudflare quick tunnel gi
 dev server a public HTTPS link (no account needed):
 
 1. Install `cloudflared` once: `winget install Cloudflare.cloudflared`
-2. Start the backend as above.
+2. Start the back end with `npm run api`.
 3. Start the front end so it accepts requests from the tunnel's domain:
 
    ```bash

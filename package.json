@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "build": "webpack --config config/webpack.config.js",
-    "serve": "webpack-dev-server --mode=development --config config/webpack.config.js"
+    "serve": "webpack-dev-server --mode=development --config config/webpack.config.js",
+    "api": "server\\.venv\\Scripts\\python -m uvicorn app:app --port 8000 --app-dir server"
   },
   "devDependencies": {
     "@babel/parser": "^7.23.9",
