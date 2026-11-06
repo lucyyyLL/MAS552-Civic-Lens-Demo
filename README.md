@@ -1,20 +1,27 @@
 # Civic Lens Demo
 
-Describe an object ("a wooden park bench", "a small oak tree"), then tap the ground to place it in
-AR. Built on 8th Wall's open-source A-Frame engine.
+Describe an object ("a wooden park bench", "an organic wooden pavilion"), then tap the ground to
+place it in AR. Built on 8th Wall's open-source A-Frame engine.
 
 ## How it works
 
 ```
-Phone (A-Frame + 8th Wall)         src/
-  │  POST /api/resolve {prompt}      prompt-ui.js  text box → sets the current "brush"
-  ▼                                  tap-place.js  places the brush, normalized to real-world height
-Python backend (holds API keys)    server/
-  1. LLM router → {query, height_m}  llm_router.py Claude Haiku (optional, see below)
-  2. Poly Pizza search → GLB URL     polypizza.py
-  ▼                                  keys.py       reads keys from the secrets folder
+Phone (A-Frame + 8th Wall)              src/
+  │  POST /api/resolve {prompt}           prompt-ui.js  text box → sets the current "brush"
+  ▼                                       tap-place.js  places the brush at real-world height
+Python backend (holds API keys)         server/
+  1. LLM router → {source, query,         llm_router.py Claude Haiku (optional, see below)
+                   height_m}
+  2a. library  → Poly Pizza → GLB URL     polypizza.py  generic objects, ~2 s
+  2b. generate → Tripo job → poll         tripo.py      distinctive designs, ~1 min, costs
+      GET /api/jobs/{id} → cached GLB                   credits; GLBs cached in server/generated
+  ▼                                       keys.py       reads keys from the secrets folder
 Phone loads the GLB, then each tap places a copy
 ```
+
+The router sends common objects ("a bench", "street lamp") to the library and specific designs
+("an organic wooden pavilion", "a bench shaped like a wave") to generation. Generated models are
+saved in `server/generated/` (not committed) and served by the backend at `/api/models/`.
 
 ### API keys
 
@@ -26,11 +33,12 @@ City Science/
 ├── MAS552-Civic-Lens-Demo/   (this repo)
 └── secrets/
     ├── PolyPizza API Key.txt   required
-    └── Anthropic API Key.txt   optional: enables the LLM router
+    ├── Anthropic API Key.txt   optional: enables the LLM router
+    └── TripoAI API Key.txt     optional: enables text-to-3D generation (needs the router)
 ```
 
 Each file holds either the bare key or one `NAME="value"` line. Without the Anthropic key, the
-raw prompt is used as the search term and every model is placed 1 m tall. To mount the folder
+raw prompt is used as the search term, every model is placed 1 m tall, and nothing is generated. To mount the folder
 elsewhere (e.g. in a container), point `CIVIC_LENS_SECRETS_DIR` at its path.
 
 ## Running locally
