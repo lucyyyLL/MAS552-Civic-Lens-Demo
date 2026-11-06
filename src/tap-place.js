@@ -1,4 +1,6 @@
-// Places a copy of the current "brush" model wherever the ground is tapped.
+// Places a copy of the current "brush" model wherever the ground is tapped, and selects placed
+// objects for the gumball when they are tapped. While an object is selected, tapping the ground
+// deselects it instead of placing a new one.
 // The brush (model URL, upright rotation, real-world height) is set by the prompt-ui component.
 
 export const tapPlaceComponent = {
@@ -13,6 +15,11 @@ export const tapPlaceComponent = {
     this.status = document.getElementById('status')
 
     document.getElementById('ground').addEventListener('click', (event) => {
+      const {gumball} = this.el.components
+      if (gumball.target) {
+        gumball.select(null)
+        return
+      }
       if (!this.data.modelUrl) {
         this.status.textContent = 'Describe an object first'
         return
@@ -47,6 +54,10 @@ export const tapPlaceComponent = {
         easing: 'easeOutElastic',
         dur: 800,
       })
+
+      // Make the object tappable (the camera's raycaster targets .cantap) to select it
+      el.classList.add('cantap')
+      el.addEventListener('click', () => this.el.components.gumball.select(el))
     })
     el.addEventListener('model-error', () => {
       this.status.textContent = 'Could not load that model'

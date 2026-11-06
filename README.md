@@ -9,6 +9,7 @@ place it in AR. Built on 8th Wall's open-source A-Frame engine.
 Phone (A-Frame + 8th Wall)              src/
   │  POST /api/resolve {prompt}           prompt-ui.js  text box → sets the current "brush"
   ▼                                       tap-place.js  places the brush at real-world height
+                                          gumball.js    moves / rotates a tapped object
 Python backend (holds API keys)         server/
   1. LLM router → {source, query,         llm_router.py Claude Haiku (optional, see below)
                    height_m}
@@ -18,6 +19,10 @@ Python backend (holds API keys)         server/
   ▼                                       keys.py       reads keys from the secrets folder
 Phone loads the GLB, then each tap places a copy
 ```
+
+Tap a placed object to select it and show a Rhino-style gumball: drag the red or green arrow to
+move it along that ground axis, the white square to move it freely, or the blue ring to rotate
+it. Tap the ground to deselect; the next ground tap places a new object.
 
 The router sends common objects ("a bench", "street lamp") to the library and specific designs
 ("an organic wooden pavilion", "a bench shaped like a wave") to generation. Generated models are

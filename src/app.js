@@ -8,6 +8,8 @@ import './index.css'
 // Register custom A-Frame components in app.js before the scene in body.html has loaded.
 import {tapPlaceComponent} from './tap-place'
 import {promptUiComponent} from './prompt-ui'
+import {gumballComponent} from './gumball'
 
 AFRAME.registerComponent('tap-place', tapPlaceComponent)
 AFRAME.registerComponent('prompt-ui', promptUiComponent)
+AFRAME.registerComponent('gumball', gumballComponent)
