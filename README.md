@@ -99,6 +99,24 @@ Pushing `main` deploys the front end to GitHub Pages (see `.github/workflows/dep
 only serves static files, so the backend must be hosted separately; set `API_BASE` in
 `src/prompt-ui.js` to its URL.
 
+## Shared site frame (SoftMind logo)
+
+Every phone that scans the SoftMind logo shares one coordinate frame, so content at a given
+spot appears at the same physical spot on all phones. `src/site-anchor.js` averages the first
+15 sightings of the logo, then locks the frame (`#siteRoot` → `#siteFrame`, in real-world
+meters); **Resync** re-anchors it. The target lives in `image-targets/` (generated with
+`npx @8thwall/image-target-cli@latest`) and is only registered on phones and tablets, so the
+desktop keeps its 3D view.
+
+- **Show the target:** open `image-targets/softmind_cropped.png` at a fixed size (same monitor,
+  same zoom) and measure it with a ruler. Put the measured width and height, and the height of
+  its center above the desk, in `src/config/site.js`.
+- **Modes:** `screen` (logo on a monitor, objects as a 1:20 desk miniature) or `print` (printed
+  logo, 1:1). Set `DEFAULT_MODE` in `src/config/site.js`, or add `?mode=print` to the URL. All
+  phones must use the same mode.
+- **Debug view:** add `?debug=1` for the 1 m grid and axes, three test markers (red, green,
+  blue at fixed site positions), a yellow outline where the engine sees the logo, and a readout.
+
 ## Notes on 8th Wall
 
 The camera's starting height (y = 8) sets the scale of virtual content: smaller y means bigger

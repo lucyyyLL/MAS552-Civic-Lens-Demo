@@ -27,14 +27,19 @@
   </form>
   <span id="status">Describe an object, then tap the ground to place it</span>
   <span id="credit"></span>
+  <!-- Shown once the site is anchored: re-averages the logo's pose on the next sightings -->
+  <button id="resyncButton" type="button" hidden>Resync</button>
 </div>
 
 <!-- prompt-ui picks the model from a text prompt, tap-place places it where the ground is tapped,
-     and gumball moves or rotates a placed object after it is tapped -->
+     and gumball moves or rotates a placed object after it is tapped. site-anchor locks the shared
+     site frame to the SoftMind logo; site-debug shows its debug view with ?debug=1. -->
 <a-scene
   tap-place
   prompt-ui
   gumball
+  site-anchor
+  site-debug
   landing-page
   xrextras-loading
   xrextras-runtime-error
@@ -81,6 +86,12 @@
   </a-entity>
 
   <a-light type="ambient" intensity="0.5"></a-light>
+
+  <!-- Shared site frame, hidden until the logo has been scanned (see site-anchor.js). Positions
+       inside #siteFrame are real-world meters. -->
+  <a-entity id="siteRoot" visible="false">
+    <a-entity id="siteFrame"></a-entity>
+  </a-entity>
 
   <!-- Adding the cantap class allows the ground to be clicked -->
   <a-box

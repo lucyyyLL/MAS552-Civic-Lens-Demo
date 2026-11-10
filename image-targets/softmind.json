@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/softmind_luminance.png",
+  "metadata": null,
+  "name": "softmind",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 0,
+    "width": 960,
+    "height": 1280,
+    "isRotated": true,
+    "originalWidth": 960,
+    "originalHeight": 1280
+  },
+  "resources": {
+    "originalImage": "softmind_original.png",
+    "croppedImage": "softmind_cropped.png",
+    "thumbnailImage": "softmind_thumbnail.png",
+    "luminanceImage": "softmind_luminance.png"
+  },
+  "created": 1794267984984,
+  "updated": 1794267984984
+}
