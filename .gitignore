@@ -4,3 +4,5 @@ tmp
 .DS_Store
 server/.venv
 __pycache__
+# Old local cache of generated models; they now go to Supabase Storage
+server/generated
