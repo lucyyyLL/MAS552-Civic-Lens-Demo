@@ -6,3 +6,5 @@ server/.venv
 __pycache__
 # Old local cache of generated models; they now go to Supabase Storage
 server/generated
+# Claude Code project settings (local only)
+.claude/
