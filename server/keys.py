@@ -29,3 +29,16 @@ def read_key(filename: str) -> str | None:
     text = path.read_text(encoding="utf-8-sig").strip()
     match = _ASSIGNMENT.match(text)
     return match.group(1) if match else text
+
+
+def read_settings(filename: str) -> dict[str, str]:
+    """Return the `NAME="value"` lines in `filename` as a dict (empty if there is no file)."""
+    path = SECRETS_DIR / filename
+    if not path.is_file():
+        return {}
+    settings = {}
+    for line in path.read_text(encoding="utf-8-sig").splitlines():
+        name, _, value = line.partition("=")
+        if value:
+            settings[name.strip()] = value.strip().strip("\"'")
+    return settings

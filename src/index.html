@@ -30,15 +30,27 @@
   <span id="credit"></span>
   <!-- Shown once the site is anchored: re-averages the logo's pose on the next sightings -->
   <button id="resyncButton" type="button" hidden>Resync</button>
+  <!-- Which layer to show; appears once the shared objects have loaded -->
+  <div id="viewToggle" hidden>
+    <button type="button" data-view="mine" aria-pressed="false">Mine</button>
+    <button type="button" data-view="common" aria-pressed="false">Common</button>
+    <button type="button" data-view="both" aria-pressed="true">Both</button>
+  </div>
+  <!-- Object menu (object-menu.js): info line and buttons, filled when it opens -->
+  <div id="objectMenu" hidden><p></p><div></div></div>
 </div>
 
 <!-- prompt-ui picks the model from a text prompt, tap-place places it where the ground is tapped,
-     and gumball moves or rotates a placed object after it is tapped. site-anchor locks the shared
-     site frame to the SoftMind logo; site-debug shows its debug view with ?debug=1. -->
+     and gumball moves or rotates a placed object after it is tapped. shared-objects syncs placed
+     objects through Supabase and object-menu shows their long-press menu. site-anchor locks the
+     shared site frame to the SoftMind logo; site-debug shows its debug view with ?debug=1.
+     site-anchor comes after the components that listen for its site-locked event. -->
 <a-scene
   tap-place
   prompt-ui
   gumball
+  shared-objects
+  object-menu
   site-anchor
   site-debug
   landing-page

@@ -7,11 +7,11 @@ from uuid import UUID
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 import llm_router
 import polypizza
+import supabase_project
 import tripo
 
 app = FastAPI(title="Civic Lens API")
@@ -20,9 +20,6 @@ app = FastAPI(title="Civic Lens API")
 app.add_middleware(
     CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "POST"], allow_headers=["*"]
 )
-
-# Generated models, cached by tripo.check()
-app.mount("/api/models", StaticFiles(directory=tripo.CACHE_DIR), name="models")
 
 
 class ResolveRequest(BaseModel):
@@ -55,6 +52,16 @@ async def resolve(request: ResolveRequest) -> dict:
         "uprightRotation": polypizza.upright_rotation(model),
         "attribution": model["Attribution"],
     }
+
+
+@app.get("/api/supabase-config")
+def supabase_config() -> dict:
+    """Connection details for the shared object store, read from the secrets folder so they
+    are never committed. The publishable key is safe in browsers (row-level security)."""
+    try:
+        return supabase_project.public_config()
+    except RuntimeError as err:
+        raise HTTPException(503, str(err)) from err
 
 
 @app.get("/api/jobs/{job_id}")

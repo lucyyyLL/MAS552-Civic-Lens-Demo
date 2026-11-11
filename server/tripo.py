@@ -1,20 +1,14 @@
 """Tripo text-to-3D generation (https://developers.tripo3d.ai)."""
 
-from pathlib import Path
-
 import httpx
 
+import supabase_project
 from keys import read_key
 
 BASE_URL = "https://openapi.tripo3d.ai/v3"
 MODEL = "P1-20260311"  # P series: low-poly with clean topology, light enough for mobile AR
 FACE_LIMIT = 10_000    # P1 accepts 50-20,000
 ATTRIBUTION = "Generated with Tripo AI"
-
-# Finished models are copied here: Tripo's download links are temporary, and a local copy is
-# served from this server's own origin and can be reused (e.g. pre-generated demo prompts).
-CACHE_DIR = Path(__file__).parent / "generated"
-CACHE_DIR.mkdir(exist_ok=True)
 
 _API_KEY = read_key("TripoAI API Key.txt")
 
@@ -42,13 +36,9 @@ async def check(task_id: str) -> dict:
     """Report a task as {"status": "running" | "success" | "failed", ...}.
 
     "running" carries "progress" (0-100), "failed" carries "error", and "success" carries
-    "modelUrl", the path of the cached GLB on this server.
+    "modelUrl", a permanent copy of the GLB in Supabase Storage. Tripo's own download links
+    expire, and saved objects keep pointing at their model.
     """
-    path = CACHE_DIR / f"{task_id}.glb"
-    model_url = f"/api/models/{path.name}"
-    if path.exists():
-        return {"status": "success", "modelUrl": model_url}
-
     async with _api() as api:
         response = await api.get(f"/tasks/{task_id}")
     response.raise_for_status()
@@ -64,5 +54,5 @@ async def check(task_id: str) -> dict:
     async with httpx.AsyncClient(timeout=60) as cdn:
         model = await cdn.get(task["output"]["model_url"])
     model.raise_for_status()
-    path.write_bytes(model.content)
+    model_url = await supabase_project.upload_model(f"{task_id}.glb", model.content)
     return {"status": "success", "modelUrl": model_url}

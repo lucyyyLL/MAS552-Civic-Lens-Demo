@@ -1,21 +1,10 @@
 // Text prompt overlay: sends the user's description to the backend and makes the returned
 // model the current tap-place "brush".
 
-// Backend origin. Empty means same origin: in development the webpack dev server proxies
-// /api to the Python server. Set this to the deployed backend URL for a production build.
-const API_BASE = ''
+import {api} from './api'
 
 const POLL_INTERVAL_MS = 2000
 const JOB_TIMEOUT_MS = 5 * 60 * 1000  // generation usually takes one to two minutes
-
-// Calls the backend and returns its JSON body, throwing the server's error message on failure
-const api = async (path, options) => {
-  const res = await fetch(`${API_BASE}${path}`, options)
-  // A non-JSON body means the backend is down or unreachable
-  const body = await res.json().catch(() => ({detail: 'Could not reach the server'}))
-  if (!res.ok) throw new Error(body.detail)
-  return body
-}
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -62,10 +51,11 @@ export const promptUiComponent = {
 
       const [x, y, z] = body.uprightRotation
       this.el.setAttribute('tap-place', {
-        // Generated models are served from the backend under a relative path
-        modelUrl: new URL(modelUrl, API_BASE || window.location.href).href,
+        modelUrl,
         upright: {x, y, z},
         height: body.heightM,
+        prompt,
+        attribution: body.attribution,
       })
       this.status.textContent = `${body.title} ready. Tap the ground to place it.`
       // CC-BY models require visible credit

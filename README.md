@@ -11,23 +11,53 @@ Phone (A-Frame + 8th Wall)              src/
   ▼                                       site-anchor.js shared frame locked to the logo
                                           tap-place.js  places the brush at real-world height
                                           gumball.js    moves / rotates a tapped object
+                                          shared-objects.js  saves and syncs placed objects
+                                          object-menu.js     publish / unpublish / delete
 Python backend (holds API keys)         server/
   1. LLM router → {source, query,         llm_router.py Claude Haiku (optional, see below)
                    height_m}
   2a. library  → Poly Pizza → GLB URL     polypizza.py  generic objects, ~2 s
   2b. generate → Tripo job → poll         tripo.py      distinctive designs, ~1 min, costs
-      GET /api/jobs/{id} → cached GLB                   credits; GLBs cached in server/generated
-  ▼                                       keys.py       reads keys from the secrets folder
-Phone loads the GLB, then each tap places a copy
+      GET /api/jobs/{id} → GLB URL                      credits
+  ▼                                       supabase_project.py  stores generated GLBs
+Phone loads the GLB, then each tap        keys.py       reads keys from the secrets folder
+places a copy, saved to Supabase
 ```
 
-Tap a placed object to select it and show a Rhino-style gumball: drag the red or green arrow to
-move it along that ground axis, the white square to move it freely, or the blue ring to rotate
-it. Tap the ground to deselect; the next ground tap places a new object.
+Tap one of your objects to select it and show a Rhino-style gumball: drag the red or green arrow
+to move it along that ground axis, the white square to move it freely, or the blue ring to
+rotate it. Tap the ground to deselect; the next ground tap places a new object.
 
 The router sends common objects ("a bench", "street lamp") to the library and specific designs
 ("an organic wooden pavilion", "a bench shaped like a wave") to generation. Generated models are
-saved in `server/generated/` (not committed) and served by the backend at `/api/models/`.
+copied to the Supabase Storage bucket `models`, because Tripo's download links expire.
+
+### Shared objects and layers
+
+Every placed object is a row in the Supabase table `objects` (positions in meters in the shared
+site frame), and every phone at the site sees changes live.
+
+- New objects are **private**: only you see them, slightly see-through.
+- **Long-press** (or **right-click** on desktop) one of your objects for its menu: **Publish**
+  makes it **common**, so everyone sees it and watches your gumball edits live; **Unpublish**
+  makes it private again; **Delete** removes it for everyone.
+- Other people's common objects can't be moved; tapping one shows its prompt and who placed it.
+- **Mine / Common / Both** (bottom left) chooses which objects to show.
+
+Each browser signs in anonymously and keeps its user id, so clearing the site's data makes its
+earlier objects someone else's. Row-level security in the database lets only owners change or
+delete objects.
+
+#### Supabase setup (once)
+
+1. In the Supabase dashboard, run `supabase/schema.sql` in the SQL Editor. It creates the table,
+   its security rules, live updates, and the public `models` bucket.
+2. Enable Authentication → Sign In / Providers → **Allow anonymous sign-ins**.
+3. Put the project settings in `secrets/Supabase Settings.txt` (see below).
+
+The front end gets the project URL and the publishable key from the backend
+(`GET /api/supabase-config`), so neither is committed. The publishable key is safe in browsers
+because row-level security protects the data; the secret key is used only by the backend.
 
 ### API keys
 
@@ -40,10 +70,12 @@ City Science/
 └── secrets/
     ├── PolyPizza API Key.txt   required
     ├── Anthropic API Key.txt   optional: enables the LLM router
-    └── TripoAI API Key.txt     optional: enables text-to-3D generation (needs the router)
+    ├── TripoAI API Key.txt     optional: enables text-to-3D generation (needs the router)
+    └── Supabase Settings.txt   required: PROJECT_ID (project URL or ref), PUBLISHABLE_KEY,
+                                SECRET_KEY, one NAME="value" per line
 ```
 
-Each file holds either the bare key or one `NAME="value"` line. Without the Anthropic key, the
+Each key file holds either the bare key or one `NAME="value"` line. Without the Anthropic key, the
 raw prompt is used as the search term, every model is placed 1 m tall, and nothing is generated. To mount the folder
 elsewhere (e.g. in a container), point `CIVIC_LENS_SECRETS_DIR` at its path.
 

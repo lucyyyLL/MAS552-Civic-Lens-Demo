@@ -85,6 +85,74 @@
   color: white;
 }
 
+/* No long-press callout or text selection on the AR view; object-menu.js has its own menu */
+.a-canvas {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#viewToggle:not([hidden]) {
+  pointer-events: auto;
+  position: absolute;
+  left: 4vw;
+  bottom: 6vh;
+  display: flex;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+#viewToggle button {
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  color: white;
+}
+
+#viewToggle button[aria-pressed='true'] {
+  background: #5ac8fa;
+}
+
+/* Bottom sheet above the other controls */
+#objectMenu:not([hidden]) {
+  pointer-events: auto;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px 4vw calc(16px + env(safe-area-inset-bottom));
+  background: rgba(20, 20, 20, 0.9);
+  text-shadow: none;
+}
+
+#objectMenu p {
+  margin: 0 0 12px;
+}
+
+#objectMenu div {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+#objectMenu button {
+  font: inherit;
+  font-size: 16px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 999px;
+  background: #5ac8fa;
+  color: white;
+  font-weight: bold;
+}
+
+#objectMenu button:last-child {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 /* Debug readout from site-debug.js (?debug=1) */
 #siteHud {
   z-index: 11;

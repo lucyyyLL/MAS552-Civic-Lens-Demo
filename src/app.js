@@ -9,6 +9,8 @@ import './index.css'
 import {tapPlaceComponent} from './tap-place'
 import {promptUiComponent} from './prompt-ui'
 import {gumballComponent} from './gumball'
+import {sharedObjectsComponent} from './shared-objects'
+import {objectMenuComponent} from './object-menu'
 import {siteAnchorComponent} from './site-anchor'
 import {siteDebugComponent} from './site-debug'
 import {SITE} from './config/site'
@@ -17,6 +19,8 @@ import softmindTarget from '../image-targets/softmind.json'
 AFRAME.registerComponent('tap-place', tapPlaceComponent)
 AFRAME.registerComponent('prompt-ui', promptUiComponent)
 AFRAME.registerComponent('gumball', gumballComponent)
+AFRAME.registerComponent('shared-objects', sharedObjectsComponent)
+AFRAME.registerComponent('object-menu', objectMenuComponent)
 AFRAME.registerComponent('site-anchor', siteAnchorComponent)
 AFRAME.registerComponent('site-debug', siteDebugComponent)
 

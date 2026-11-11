@@ -2,6 +2,7 @@
 // the ground's two axes, the white square moves it freely on the ground, and the blue ring
 // rotates it around its vertical axis. tap-place selects objects through select().
 // The gumball lives in #siteFrame next to the objects, so all its math is in site meters.
+// Moves are saved through shared-objects, so other phones see them.
 
 const SCREEN_SIZE = 0.18  // gumball size as a fraction of its distance to the camera
 
@@ -151,18 +152,20 @@ export const gumballComponent = {
 
     if (handle === 'rotate') {
       object.rotation.y = rotationY + angleAround(point, position) - startAngle
-      return
+    } else {
+      // Move by how far the pointer travelled on the plane, limited to one axis for the arrows
+      const offset = point.sub(start)
+      if (handle === 'x') offset.z = 0
+      if (handle === 'z') offset.x = 0
+      object.position.copy(position).add(offset)
     }
-    // Move by how far the pointer travelled on the plane, limited to one axis for the arrows
-    const offset = point.sub(start)
-    if (handle === 'x') offset.z = 0
-    if (handle === 'z') offset.x = 0
-    object.position.copy(position).add(offset)
+    this.el.components['shared-objects'].save(this.target, false)
   },
 
   onPointerUp(event) {
     if (!this.drag) return
     event.stopPropagation()
     this.drag = null
+    this.el.components['shared-objects'].save(this.target, true)
   },
 }

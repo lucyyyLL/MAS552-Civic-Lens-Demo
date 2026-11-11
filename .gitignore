@@ -4,4 +4,3 @@ tmp
 .DS_Store
 server/.venv
 __pycache__
-server/generated
