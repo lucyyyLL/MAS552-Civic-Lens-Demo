@@ -37,6 +37,13 @@ export const promptUiComponent = {
       event.preventDefault()
       this.resolve(this.input.value.trim())
     })
+
+    // The form starts hidden behind "Point your camera at the SoftMind logo" (index.html)
+    this.el.addEventListener('site-locked', () => {
+      if (!form.hidden) return  // a resync, not the first lock
+      form.hidden = false
+      this.status.textContent = 'Describe an object, then tap the ground to place it'
+    })
   },
 
   async resolve(prompt) {

@@ -3,17 +3,20 @@
 //
 //   SLAM world (each phone's own)
 //    └─ #siteRoot   position + yaw only, origin on the ground below the target's center
-//        └─ #siteFrame  uniform scale = SLAM units per real meter × worldScale
+//        └─ #siteFrame  uniform scale = SLAM units per real meter, so its contents are in meters
 //
 // The first SAMPLE_COUNT sightings are averaged, then the frame is locked and later sightings are
 // ignored, so content stays steady and only world tracking moves the view. Losing sight of the
 // target changes nothing: world tracking keeps the frame in place.
+// The laptop has no target to scan, so it locks at once to its own scene (see init).
 
 import {SITE} from './config/site'
 
 export const SAMPLE_COUNT = 15
 const AUTO_RESYNC_AFTER_MS = 10000  // re-anchor when the target is found again after this long
 const BLEND_MS = 300                // re-anchoring glides instead of jumping
+// Laptop scale: the desktop camera starts 8 units up, roughly a phone held at 1.6 m
+const DESKTOP_UNITS_PER_METER = 5
 
 // Turns one target sighting into a site pose sample
 const sample = (detail, cameraPosition) => {
@@ -65,6 +68,7 @@ export const siteAnchorComponent = {
     this.frame = document.getElementById('siteFrame').object3D
     this.locked = false
     this.samples = []
+    this.anchored = false      // locked at least once; placement waits for this
     this.unitsPerMeter = null  // of the current lock
     this.lastSeen = 0          // when the target was last tracked (ms)
     this.blend = null          // in-progress glide to a new lock
@@ -81,6 +85,11 @@ export const siteAnchorComponent = {
 
     this.resyncButton = document.getElementById('resyncButton')
     this.resyncButton.addEventListener('click', () => this.resync())
+
+    // Laptop: the site origin is the desktop scene's ground origin, facing the camera
+    if (!SITE.scansTarget) {
+      this.lock({position: new THREE.Vector3(), yaw: 0, unitsPerMeter: DESKTOP_UNITS_PER_METER})
+    }
   },
 
   onSighting({detail}) {
@@ -90,21 +99,22 @@ export const siteAnchorComponent = {
 
     this.el.camera.getWorldPosition(this.cameraPosition)
     this.samples.push(sample(detail, this.cameraPosition))
-    if (this.samples.length >= SAMPLE_COUNT) this.lock(average(this.samples))
+    if (this.samples.length < SAMPLE_COUNT) return
+
+    const {position, yaw, unitsPerMeter} = average(this.samples)
+    // Ground height comes from config, not SLAM, so every phone agrees on it
+    position.y -= SITE.targetCenterHeightM * unitsPerMeter
+    this.lock({position, yaw, unitsPerMeter})
   },
 
+  // Locks the site origin (on the ground) to a pose in SLAM world units
   lock({position, yaw, unitsPerMeter}) {
-    const pose = {
-      // Ground height comes from config, not SLAM, so every phone agrees on it
-      position: position.sub(new THREE.Vector3(0, SITE.targetCenterHeightM * unitsPerMeter, 0)),
-      yaw,
-      scale: unitsPerMeter * SITE.worldScale,
-    }
+    const pose = {position, yaw, scale: unitsPerMeter}
 
-    if (this.unitsPerMeter === null) {
+    if (!this.anchored) {
       this.apply(pose)  // first lock: snap
       this.root.visible = true
-      this.resyncButton.hidden = false
+      this.resyncButton.hidden = !SITE.scansTarget
     } else {
       this.blend = {
         from: {position: this.root.position.clone(), yaw: this.root.rotation.y, scale: this.frame.scale.x},
@@ -114,6 +124,7 @@ export const siteAnchorComponent = {
     }
 
     this.locked = true
+    this.anchored = true
     this.samples = []
     this.unitsPerMeter = unitsPerMeter
     this.el.emit('site-locked', {unitsPerMeter})

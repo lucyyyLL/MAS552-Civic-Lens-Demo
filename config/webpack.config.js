@@ -120,8 +120,10 @@ const config = {
   devServer: {
     open: false,
     compress: true,
-    // Forward API calls to the Python backend (server/app.py) so the page and API share an origin
-    proxy: [{context: ['/api'], target: 'http://localhost:8000'}],
+    // Forward API calls to the Python backend (server/app.py) so the page and API share an origin.
+    // 127.0.0.1, not localhost: Node resolves localhost to IPv6 ::1 first, where other programs
+    // (e.g. Docker Desktop) may also listen on port 8000, while uvicorn listens on IPv4 only.
+    proxy: [{context: ['/api'], target: 'http://127.0.0.1:8000'}],
     hot: true,
     liveReload: false,
     headers: {

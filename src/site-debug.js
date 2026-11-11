@@ -14,7 +14,7 @@ const MARKERS = [
   {position: [-0.5, 0, 1.0], color: 0x1e88e5},
 ]
 
-// A 40 cm pin with a ball on top, standing on the ground (2 cm tall in screen mode)
+// A 40 cm pin with a ball on top, standing on the ground
 const buildMarker = (color) => {
   const material = new THREE.MeshBasicMaterial({color})
   const pin = new THREE.Group()
@@ -66,6 +66,8 @@ export const siteDebugComponent = {
 
     this.hud = document.createElement('pre')
     this.hud.id = 'siteHud'
+    // Replaced every 250 ms once the camera runs; still showing means the camera never started
+    this.hud.textContent = 'debug on: waiting for the camera…'
     document.body.appendChild(this.hud)
     this.nextHudUpdate = 0
   },
@@ -77,10 +79,10 @@ export const siteDebugComponent = {
     const anchor = this.el.components['site-anchor']
     const d = this.lastDetail
     const fmt = n => (n === null || n === undefined ? '–' : n.toFixed(4))
-    const state = anchor.locked ? 'locked' : `sampling ${anchor.samples.length}/${SAMPLE_COUNT}`
+    const state = !SITE.scansTarget ? 'locked (laptop)'
+      : anchor.locked ? 'locked' : `sampling ${anchor.samples.length}/${SAMPLE_COUNT}`
     const seen = anchor.lastSeen ? `${((performance.now() - anchor.lastSeen) / 1000).toFixed(1)} s ago` : 'never'
     this.hud.textContent = [
-      `mode          ${SITE.mode} (worldScale ${SITE.worldScale})`,
       `anchor        ${state}`,
       `target seen   ${seen}`,
       `scale         ${fmt(d && d.scale)}`,

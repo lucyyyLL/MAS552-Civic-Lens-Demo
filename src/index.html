@@ -20,12 +20,13 @@
 <!-- body.html is optional; elements will be added to your html body after app.js is loaded. -->
 
 <div class="over">
-  <form id="promptForm">
+  <!-- Shown once the site is anchored -->
+  <form id="promptForm" hidden>
     <input id="promptInput" type="text" placeholder="Describe an object, e.g. a park bench"
       maxlength="200" autocomplete="off" required>
     <button type="submit">Create</button>
   </form>
-  <span id="status">Describe an object, then tap the ground to place it</span>
+  <span id="status">Point your camera at the SoftMind logo to start</span>
   <span id="credit"></span>
   <!-- Shown once the site is anchored: re-averages the logo's pose on the next sightings -->
   <button id="resyncButton" type="button" hidden>Resync</button>
@@ -88,20 +89,20 @@
   <a-light type="ambient" intensity="0.5"></a-light>
 
   <!-- Shared site frame, hidden until the logo has been scanned (see site-anchor.js). Positions
-       inside #siteFrame are real-world meters. -->
+       inside #siteFrame are real-world meters; placed objects are added to it. -->
   <a-entity id="siteRoot" visible="false">
-    <a-entity id="siteFrame"></a-entity>
+    <a-entity id="siteFrame">
+      <!-- The floor: 200 m square, top face at y = 0. The cantap class lets it be tapped. -->
+      <a-box
+        id="ground"
+        class="cantap"
+        scale="200 2 200"
+        position="0 -1 0"
+        material="shader: shadow; transparent: true; opacity: 0.4"
+        shadow>
+      </a-box>
+    </a-entity>
   </a-entity>
-
-  <!-- Adding the cantap class allows the ground to be clicked -->
-  <a-box
-    id="ground"
-    class="cantap"
-    scale="1000 2 1000"
-    position="0 -0.99 0"
-    material="shader: shadow; transparent: true; opacity: 0.4"
-    shadow>
-  </a-box>
 </a-scene>
 
 </body>

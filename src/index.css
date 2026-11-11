@@ -23,6 +23,10 @@
   gap: 8px;
 }
 
+#promptForm[hidden] {
+  display: none;
+}
+
 #promptInput,
 #promptForm button {
   font: inherit;

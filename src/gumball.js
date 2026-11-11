@@ -1,6 +1,7 @@
 // Rhino-style gumball for placed objects. The red and green arrows move the selected object along
 // the ground's two axes, the white square moves it freely on the ground, and the blue ring
 // rotates it around its vertical axis. tap-place selects objects through select().
+// The gumball lives in #siteFrame next to the objects, so all its math is in site meters.
 
 const SCREEN_SIZE = 0.18  // gumball size as a fraction of its distance to the camera
 
@@ -56,11 +57,15 @@ export const gumballComponent = {
     this.drag = null    // the handle being dragged and the state when the drag began
     this.gizmo = buildGumball()
     this.gizmo.visible = false
-    this.el.object3D.add(this.gizmo)
+    this.frame = document.getElementById('siteFrame').object3D
+    this.frame.add(this.gizmo)
 
     this.raycaster = new THREE.Raycaster()
+    this.ray = new THREE.Ray()  // the pointer's ray in site meters
     this.plane = new THREE.Plane(new THREE.Vector3(0, 1, 0))  // horizontal plane at the object's base
     this.cameraPosition = new THREE.Vector3()
+    this.gizmoPosition = new THREE.Vector3()
+    this.frameScale = new THREE.Vector3()
 
     // Listen in the capture phase on window, so a press on a handle is claimed before A-Frame's
     // cursor (which would count it as a tap) and 8th Wall's desktop camera controls see it
@@ -84,11 +89,13 @@ export const gumballComponent = {
 
   tick() {
     if (!this.target) return
-    const {position} = this.target.object3D
-    this.gizmo.position.copy(position)
-    // Keep a constant size on screen, like Rhino's gumball
+    this.gizmo.position.copy(this.target.object3D.position)
+    // Keep a constant size on screen, like Rhino's gumball. The distance is in world units, so
+    // divide by the frame's scale to get site meters.
     this.el.camera.getWorldPosition(this.cameraPosition)
-    this.gizmo.scale.setScalar(this.cameraPosition.distanceTo(position) * SCREEN_SIZE)
+    this.target.object3D.getWorldPosition(this.gizmoPosition)
+    this.frame.getWorldScale(this.frameScale)
+    this.gizmo.scale.setScalar(this.cameraPosition.distanceTo(this.gizmoPosition) * SCREEN_SIZE / this.frameScale.x)
   },
 
   // Aims the raycaster through the pointer's position on the canvas
@@ -101,10 +108,12 @@ export const gumballComponent = {
     this.raycaster.setFromCamera(pointer, this.el.camera)
   },
 
-  // The point on the drag plane under the pointer, or null if the pointer is above the horizon
+  // The point on the drag plane under the pointer in site meters, or null above the horizon
   pointOnPlane(event) {
     this.aimAt(event)
-    return this.raycaster.ray.intersectPlane(this.plane, new THREE.Vector3())
+    const toSite = this.frame.matrixWorld.clone().invert()
+    this.ray.copy(this.raycaster.ray).applyMatrix4(toSite)
+    return this.ray.intersectPlane(this.plane, new THREE.Vector3())
   },
 
   onPointerDown(event) {
